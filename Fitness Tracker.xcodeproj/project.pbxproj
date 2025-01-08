@@ -14,6 +14,8 @@
 		0F7ED11B2D2F28330038A654 /* Fitness_TrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7ED11A2D2F28330038A654 /* Fitness_TrackerTests.swift */; };
 		0F7ED1252D2F28330038A654 /* Fitness_TrackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7ED1242D2F28330038A654 /* Fitness_TrackerUITests.swift */; };
 		0F7ED1272D2F28330038A654 /* Fitness_TrackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7ED1262D2F28330038A654 /* Fitness_TrackerUITestsLaunchTests.swift */; };
+		0F7ED1362D2F29200038A654 /* FitnessRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7ED1352D2F29200038A654 /* FitnessRecord.swift */; };
+		0F7ED1382D2F351D0038A654 /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7ED1372D2F351D0038A654 /* UserDefaults.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +46,8 @@
 		0F7ED1202D2F28330038A654 /* Fitness TrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Fitness TrackerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F7ED1242D2F28330038A654 /* Fitness_TrackerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fitness_TrackerUITests.swift; sourceTree = "<group>"; };
 		0F7ED1262D2F28330038A654 /* Fitness_TrackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fitness_TrackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		0F7ED1352D2F29200038A654 /* FitnessRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitnessRecord.swift; sourceTree = "<group>"; };
+		0F7ED1372D2F351D0038A654 /* UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +98,8 @@
 		0F7ED1082D2F28310038A654 /* Fitness Tracker */ = {
 			isa = PBXGroup;
 			children = (
+				0F7ED1352D2F29200038A654 /* FitnessRecord.swift */,
+				0F7ED1372D2F351D0038A654 /* UserDefaults.swift */,
 				0F7ED1092D2F28310038A654 /* Fitness_TrackerApp.swift */,
 				0F7ED10B2D2F28310038A654 /* ContentView.swift */,
 				0F7ED10D2D2F28320038A654 /* Assets.xcassets */,
@@ -257,6 +263,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F7ED1382D2F351D0038A654 /* UserDefaults.swift in Sources */,
+				0F7ED1362D2F29200038A654 /* FitnessRecord.swift in Sources */,
 				0F7ED10C2D2F28310038A654 /* ContentView.swift in Sources */,
 				0F7ED10A2D2F28310038A654 /* Fitness_TrackerApp.swift in Sources */,
 			);
