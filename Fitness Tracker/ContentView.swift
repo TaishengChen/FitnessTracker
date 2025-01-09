@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var showDeleteConfirmation = false
     @State private var recordToDelete: FitnessRecord? = nil
     @State private var expandedSections: Set<String> = []
+    @State private var swipedRecordID: UUID? = nil
 
     // Group records by date
     private var groupedRecords: [String: [FitnessRecord]] {
@@ -57,25 +58,59 @@ struct ContentView: View {
                             
                             if expandedSections.contains(date) {
                                 ForEach(groupedRecords[date] ?? []) { record in
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text(record.exerciseName).font(.headline)
-                                        ForEach(record.parameters) { parameter in
-                                            HStack {
-                                                Text("\(parameter.name):")
-                                                Spacer()
-                                                Text("\(parameter.value) \(unitForParameter(parameter))")
+                                    ZStack {
+                                        // 删除按钮背景
+                                        HStack {
+                                            Spacer()
+                                            Button {
+                                                recordToDelete = record
+                                                showDeleteConfirmation = true
+                                            } label: {
+                                                Image(systemName: "trash")
+                                                    .foregroundColor(.white)
+                                                    .padding()
+                                                    .background(Color.red)
+                                                    .cornerRadius(10)
+                                            }
+                                            .padding(.trailing, 16)
+                                        }
+
+                                        // 内容条
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            Text(record.exerciseName).font(.headline)
+                                            ForEach(record.parameters) { parameter in
+                                                HStack {
+                                                    Text("\(parameter.name):")
+                                                    Spacer()
+                                                    Text("\(parameter.value) \(unitForParameter(parameter))")
+                                                }
+                                            }
+                                            if !record.notes.isEmpty {
+                                                Text("Notes: \(record.notes)")
+                                                    .font(.footnote)
+                                                    .foregroundColor(.gray)
                                             }
                                         }
-                                        if !record.notes.isEmpty {
-                                            Text("Notes: \(record.notes)")
-                                                .font(.footnote)
-                                                .foregroundColor(.gray)
-                                        }
+                                        .padding()
+                                        .background(Color(UIColor.secondarySystemBackground))
+                                        .cornerRadius(10)
+                                        .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
+                                        .offset(x: swipedRecordID == record.id ? -100 : 0) // 左滑偏移
+                                        .gesture(
+                                            DragGesture()
+                                                .onChanged { value in
+                                                    if value.translation.width < -50 { // 左滑超过 50 点
+                                                        withAnimation {
+                                                            swipedRecordID = record.id
+                                                        }
+                                                    } else if value.translation.width > 50 { // 右滑恢复
+                                                        withAnimation {
+                                                            swipedRecordID = nil
+                                                        }
+                                                    }
+                                                }
+                                        )
                                     }
-                                    .padding()
-                                    .background(Color(UIColor.secondarySystemBackground))
-                                    .cornerRadius(10)
-                                    .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
                                     .frame(maxWidth: UIScreen.main.bounds.width * 0.9) // 内容条宽度为屏幕宽度的 90%
                                     .padding(.horizontal)
                                 }
