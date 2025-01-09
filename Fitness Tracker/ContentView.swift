@@ -12,117 +12,123 @@ struct ContentView: View {
     @State private var showingAddRecordView = false
     @State private var showDeleteConfirmation = false
     @State private var recordToDelete: FitnessRecord? = nil
+    @State private var expandedSections: Set<String> = []
 
-    // record by date
-    var groupedRecords: [String: [FitnessRecord]] {
-        Dictionary(grouping: records, by: { record in
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            return formatter.string(from: record.date)
-        })
+    // Group records by date
+    private var groupedRecords: [String: [FitnessRecord]] {
+        Dictionary(grouping: records, by: { DateFormatter.localizedString(from: $0.date, dateStyle: .medium, timeStyle: .none) })
     }
-    
-//    extension ParameterType {
-//        var unit: String {
-//            switch self {
-//            case .weight: return "kg"
-//            case .speed: return "km/h"
-//            }
-//        }
-//    }
 
-    func saveRecords() {
+    private func saveRecords() {
         UserDefaults.standard.saveRecords(records)
     }
-    
-    func deleteRecord(_ record: FitnessRecord) {
-        guard let index = records.firstIndex(where: { $0.id == record.id }) else {
-            return
-        }
-        records.remove(at: index)
+
+    private func deleteRecord(_ record: FitnessRecord) {
+        records.removeAll { $0.id == record.id }
         saveRecords()
     }
-    
-    func unitForParameter(_ parameter: Parameter) -> String {
+
+    private func toggleSection(_ date: String) {
+        if expandedSections.contains(date) {
+            expandedSections.remove(date)
+        } else {
+            expandedSections.insert(date)
+        }
+    }
+
+    private func unitForParameter(_ parameter: Parameter) -> String {
         switch parameter.name {
-        case "Weight":
-            return "kg"
-        case "Speed":
-            return "km/h"
-        case "Duration":
-            return "minutes"
-        case "Sets", "Reps per Set":
-            return ""
-        default:
-            return ""
+        case "Weight": return "kg"
+        case "Speed": return "km/h"
+        case "Duration": return "minutes"
+        case "Sets", "Reps per Set": return ""
+        default: return ""
         }
     }
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(groupedRecords.keys.sorted(), id: \.self) { date in
-                    Section(header: Text(date)) {
-                        ForEach(groupedRecords[date] ?? []) { record in
-                            VStack(alignment: .leading) {
-                                Text(record.exerciseName)
-                                    .font(.headline)
-                                ForEach(record.parameters) { parameter in
-                                    HStack {
-                                        Text("\(parameter.name):")
-                                        Spacer()
-                                        Text("\(parameter.value) \(unitForParameter(parameter))")
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 16) { // 使用 VStack 代替 List
+                        ForEach(groupedRecords.keys.sorted(), id: \.self) { date in
+                            headerView(for: date) // 日期条
+                                .frame(maxWidth: .infinity) // 日期条全宽
+                                .padding(.horizontal)
+                            
+                            if expandedSections.contains(date) {
+                                ForEach(groupedRecords[date] ?? []) { record in
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text(record.exerciseName).font(.headline)
+                                        ForEach(record.parameters) { parameter in
+                                            HStack {
+                                                Text("\(parameter.name):")
+                                                Spacer()
+                                                Text("\(parameter.value) \(unitForParameter(parameter))")
+                                            }
+                                        }
+                                        if !record.notes.isEmpty {
+                                            Text("Notes: \(record.notes)")
+                                                .font(.footnote)
+                                                .foregroundColor(.gray)
+                                        }
                                     }
-                                    .font(.subheadline)
-                                }
-                                if !record.notes.isEmpty {
-                                    Text("Notes: \(record.notes)")
-                                        .font(.footnote)
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                            .swipeActions {
-                                Button(role: .destructive) {
-                                    recordToDelete = record
-                                    showDeleteConfirmation = true
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                                    .padding()
+                                    .background(Color(UIColor.secondarySystemBackground))
+                                    .cornerRadius(10)
+                                    .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
+                                    .frame(maxWidth: UIScreen.main.bounds.width * 0.9) // 内容条宽度为屏幕宽度的 90%
+                                    .padding(.horizontal)
                                 }
                             }
                         }
                     }
+                    .padding(.vertical)
                 }
-            }
-            .navigationTitle("Fitness Tracker")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingAddRecordView = true
-                    }) {
-                        Image(systemName: "plus")
+                .navigationTitle("Fitness Tracker")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { showingAddRecordView = true }) {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
-            }
-            .sheet(isPresented: $showingAddRecordView) {
-                AddRecordView { newRecord in
-                    records.append(newRecord)
-                    saveRecords()
-                }
-            }
-            .alert("Delete Record", isPresented: $showDeleteConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive) {
-                    if let record = recordToDelete {
-                        deleteRecord(record)
+                .sheet(isPresented: $showingAddRecordView) {
+                    AddRecordView { newRecord in
+                        records.append(newRecord)
+                        saveRecords()
                     }
-                    recordToDelete = nil
                 }
-            } message: {
-                Text("Are you sure you want to delete this record?")
+                .alert("Delete Record", isPresented: $showDeleteConfirmation) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Delete", role: .destructive) {
+                        if let record = recordToDelete {
+                            deleteRecord(record)
+                        }
+                    }
+                } message: {
+                    Text("Are you sure you want to delete this record?")
+                }
             }
         }
+
+        private func headerView(for date: String) -> some View {
+            Button(action: { toggleSection(date) }) {
+                HStack {
+                    Image(systemName: expandedSections.contains(date) ? "chevron.down" : "chevron.right")
+                        .foregroundColor(.primary)
+                    Text(date)
+                        .font(.title3)
+                        .bold()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .padding()
+            .background(Color(UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .shadow(radius: 2)
+        }
     }
-}
 
 struct AddRecordView: View {
     @Environment(\.dismiss) var dismiss
